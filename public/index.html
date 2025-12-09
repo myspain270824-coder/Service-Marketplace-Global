@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Service Marketplace Global — Заявка</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 8px;
+    }
+
+    p {
+      margin: 4px 0 16px;
+      color: #9ca3af;
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      border: 1px solid #1f2937;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .col {
+      flex: 1 1 280px;
+      min-width: 260px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+      color: #9ca3af;
+    }
+
+    select, input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 14px;
+    }
+
+    select:focus, input:focus, textarea:focus {
+      outline: 2px solid #38bdf8;
+      border-color: #38bdf8;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      background: #0ea5e9;
+      color: #0b1120;
+      font-weight: 600;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+    }
+
+    button:hover {
+      background: #22c55e;
+      box-shadow: 0 8px 20px rgba(34,197,94,0.4);
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .service-item {
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid #1f2937;
+      margin-bottom: 8px;
+      background: #020617;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .service-main {
+      flex: 1 1 auto;
+    }
+
+    .service-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #e5e7eb;
+    }
+
+    .service-subcategory {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+
+    .service-desc {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .service-meta {
+      font-size: 12px;
+      color: #a3e635;
+    }
+
+    .service-actions {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #172554;
+      color: #93c5fd;
+      font-size: 11px;
+      margin-right: 6px;
+    }
+
+    .form-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .status {
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .status.ok {
+      color: #4ade80;
+    }
+
+    .status.err {
+      color: #fb7185;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #1f2937;
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Service Marketplace Global</h1>
+    <p>Выбери услугу, заполни короткую форму — заявка попадёт в базу PostgreSQL.</p>
+
+    <!-- Блок 1: выбор категории -->
+    <div class="card">
+      <label for="categorySelect">1. Выберите категорию</label>
+      <select id="categorySelect">
+        <option value="">Загружаем категории...</option>
+      </select>
+      <div id="categoryStatus" class="status"></div>
+    </div>
+
+    <!-- Блок 2: список услуг -->
+    <div class="card">
+      <div class="row">
+        <div class="col">
+          <strong>2. Услуги в выбранной категории</strong>
+          <p style="margin-top:4px;font-size:13px;">
+            Нажмите «Оставить заявку» напротив нужной услуги.
+          </p>
+        </div>
+      </div>
+      <hr />
+      <div id="servicesList">
+        <p style="font-size:13px;color:#9ca3af;">Сначала выберите категорию.</p>
+      </div>
+    </div>
+
+    <!-- Блок 3: форма заявки -->
+    <div class="card" id="requestCard" style="display:none;">
+      <div class="form-title" id="requestTitle">3. Оставить заявку</div>
+
+      <form id="requestForm">
+        <div class="row">
+          <div class="col">
+            <label for="customerName">Ваше имя</label>
+            <input id="customerName" name="customer_name" placeholder="Как к вам обращаться?" />
+          </div>
+          <div class="col">
+            <label for="customerContact">Контакт</label>
+            <input id="customerContact" name="customer_contact" placeholder="Телефон / WhatsApp / Telegram" required />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <div class="col">
+            <label for="city">Город / район</label>
+            <input id="city" name="city" placeholder="Например: Alicante, San Juan" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label for="comment">Кратко, что нужно сделать</label>
+          <textarea id="comment" name="comment" placeholder="Опишите задачу"></textarea>
+        </div>
+
+        <div style="margin-top:14px;display:flex;align-items:center;gap:10px;">
+          <button type="submit" id="submitBtn">Отправить заявку</button>
+          <span id="formStatus" class="status"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const categorySelect = document.getElementById('categorySelect');
+    const categoryStatus = document.getElementById('categoryStatus');
+    const servicesList = document.getElementById('servicesList');
+    const requestCard = document.getElementById('requestCard');
+    const requestTitle = document.getElementById('requestTitle');
+    const requestForm = document.getElementById('requestForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const formStatus = document.getElementById('formStatus');
+
+    let currentService = null;
+
+    // Загрузка категорий при старте
+    async function loadCategories() {
+      try {
+        categoryStatus.textContent = 'Загружаем категории...';
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+
+        categorySelect.innerHTML = '<option value="">Выберите категорию...</option>';
+
+        data.forEach(cat => {
+          if (cat.active === false) return;
+          const opt = document.createElement('option');
+          opt.value = cat.id;
+          opt.textContent = cat.name;
+          categorySelect.appendChild(opt);
+        });
+
+        categoryStatus.textContent = data.length
+          ? 'Категории загружены.'
+          : 'Категорий пока нет.';
+      } catch (err) {
+        console.error(err);
+        categoryStatus.textContent = 'Ошибка загрузки категорий.';
+        categoryStatus.className = 'status err';
+      }
+    }
+
+    // Загрузка услуг по категории
+    async function loadServicesByCategory(categoryId) {
+      if (!categoryId) {
+        servicesList.innerHTML =
+          '<p style="font-size:13px;color:#9ca3af;">Сначала выберите категорию.</p>';
+        requestCard.style.display = 'none';
+        currentService = null;
+        return;
+      }
+
+      servicesList.innerHTML =
+        '<p style="font-size:13px;color:#9ca3af;">Загружаем услуги...</p>';
+      requestCard.style.display = 'none';
+      formStatus.textContent = '';
+      currentService = null;
+
+      try {
+        const res = await fetch('/api/services/by-category/' + categoryId);
+        const data = await res.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+          servicesList.innerHTML =
+            '<p style="font-size:13px;color:#9ca3af;">В этой категории пока нет услуг.</p>';
+          return;
+        }
+
+        servicesList.innerHTML = '';
+        data.forEach(service => {
+          if (service.active === false) return;
+
+          const item = document.createElement('div');
+          item.className = 'service-item';
+
+          const main = document.createElement('div');
+          main.className = 'service-main';
+
+          const name = document.createElement('div');
+          name.className = 'service-name';
+          name.textContent = service.name;
+
+          const subcat = document.createElement('div');
+          subcat.className = 'service-subcategory';
+          subcat.textContent = service.subcategory_name
+            ? 'Подкатегория: ' + service.subcategory_name
+            : '';
+
+          const desc = document.createElement('div');
+          desc.className = 'service-desc';
+          desc.textContent = service.description || 'Описание не указано';
+
+          const meta = document.createElement('div');
+          meta.className = 'service-meta';
+          const priceText = service.base_price != null
+            ? `Базовая цена: ${service.base_price}`
+            : 'Цена по договорённости';
+          meta.textContent = priceText;
+
+          main.appendChild(name);
+          if (subcat.textContent) main.appendChild(subcat);
+          main.appendChild(desc);
+          main.appendChild(meta);
+
+          const actions = document.createElement('div');
+          actions.className = 'service-actions';
+
+          const btn = document.createElement('button');
+          btn.textContent = 'Оставить заявку';
+          btn.addEventListener('click', () => {
+            currentService = {
+              id: service.id,
+              name: service.name,
+            };
+            requestTitle.textContent =
+              '3. Оставить заявку: ' + service.name;
+            requestCard.style.display = 'block';
+            formStatus.textContent = '';
+            requestForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+
+          actions.appendChild(btn);
+
+          item.appendChild(main);
+          item.appendChild(actions);
+
+          servicesList.appendChild(item);
+        });
+      } catch (err) {
+        console.error(err);
+        servicesList.innerHTML =
+          '<p style="font-size:13px;color:#fb7185;">Ошибка загрузки услуг.</p>';
+      }
+    }
+
+    // Изменение категории
+    categorySelect.addEventListener('change', (e) => {
+      const val = e.target.value;
+      loadServicesByCategory(val);
+    });
+
+    // Отправка формы заявки
+    requestForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formStatus.textContent = '';
+      formStatus.className = 'status';
+
+      if (!currentService) {
+        formStatus.textContent = 'Сначала выберите услугу.';
+        formStatus.className = 'status err';
+        return;
+      }
+
+      const customer_name = document.getElementById('customerName').value.trim();
+      const customer_contact = document.getElementById('customerContact').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const comment = document.getElementById('comment').value.trim();
+
+      if (!customer_contact) {
+        formStatus.textContent = 'Укажите хотя бы один контакт.';
+        formStatus.className = 'status err';
+        return;
+      }
+
+      const payload = {
+        service_id: currentService.id,
+        customer_name,
+        customer_contact,
+        city,
+        comment,
+      };
+
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Отправляем...';
+
+        const res = await fetch('/api/requests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Ошибка сервера');
+        }
+
+        formStatus.textContent = 'Заявка отправлена! ID: ' + data.request_id;
+        formStatus.className = 'status ok';
+        requestForm.reset();
+      } catch (err) {
+        console.error(err);
+        formStatus.textContent = 'Не удалось отправить заявку.';
+        formStatus.className = 'status err';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Отправить заявку';
+      }
+    });
+
+    // Старт
+    loadCategories();
+  </script>
+</body>
+</html>
