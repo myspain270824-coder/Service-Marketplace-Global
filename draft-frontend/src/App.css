@@ -1,0 +1,35 @@
+import { useEffect, useState } from "react";
+import { fetchAPI } from "./api";
+
+function App() {
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    async function loadCategories() {
+      const data = await fetchAPI("/api/categories");
+      if (data) setCategories(data);
+    }
+    loadCategories();
+  }, []);
+
+  return (
+    <div style={{ fontFamily: "Arial", padding: "20px" }}>
+      <h1>🛠 Service Marketplace</h1>
+      <h2>Категории услуг:</h2>
+
+      {categories.length === 0 ? (
+        <p>Загрузка...</p>
+      ) : (
+        <ul>
+          {categories.map((cat) => (
+            <li key={cat.id}>
+              <b>{cat.name}</b> — {cat.description}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+export default App;

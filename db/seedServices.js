@@ -1,5 +1,5 @@
 const { Client } = require('pg');
-const services = require('./servicesData'); // твой массив услуг
+const services = require('../servicesData'); // твой массив услуг
 
 const client = new Client({
   host: 'localhost',

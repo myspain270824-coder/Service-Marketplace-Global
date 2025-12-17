@@ -261,7 +261,7 @@
     async function loadCategories() {
       try {
         categoryStatus.textContent = 'Загружаем категории...';
-        const res = await fetch('/api/categories');
+        const res = await fetch('http://localhost:3000/api/categories');
         const data = await res.json();
 
         categorySelect.innerHTML = '<option value="">Выберите категорию...</option>';
@@ -301,7 +301,7 @@
       currentService = null;
 
       try {
-        const res = await fetch('/api/services/by-category/' + categoryId);
+        const res = await fetch('http://localhost:3000/api/services/by-category/' + categoryId);
         const data = await res.json();
 
         if (!Array.isArray(data) || data.length === 0) {
@@ -418,7 +418,7 @@
         submitBtn.disabled = true;
         submitBtn.textContent = 'Отправляем...';
 
-        const res = await fetch('/api/requests', {
+        const res = await fetch('http://localhost:3000/api/requests', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
